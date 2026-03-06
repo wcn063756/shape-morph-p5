@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji 变形</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+    }
+    #emoji-selector {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      text-align: center;
+      z-index: 1000;
+    }
+    #emoji-selector h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .emoji-inputs {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    .emoji-input {
+      text-align: center;
+    }
+    .emoji-input label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #666;
+    }
+    .emoji-input input {
+      width: 100px;
+      height: 60px;
+      font-size: 30px;
+      text-align: center;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .emoji-input input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    #start-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #start-btn:hover {
+      background: #45a049;
+    }
+    #loading {
+      margin-top: 20px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="emoji-selector">
+    <h2>选择两边的 Emoji</h2>
+    <div class="emoji-inputs">
+      <div class="emoji-input">
+        <label>左侧 Emoji</label>
+        <input type="text" id="left-emoji-input" value="😀" maxlength="2">
+      </div>
+      <div class="emoji-input">
+        <label>右侧 Emoji</label>
+        <input type="text" id="right-emoji-input" value="🎉" maxlength="2">
+      </div>
+    </div>
+    <button id="start-btn">开始变形</button>
+    <div id="loading" style="display: none;">AI 正在生成过渡态...</div>
+  </div>
+  <script>
+    let leftEmoji = "😀";
+    let rightEmoji = "🎉";
+    let transitionEmojis = [];
+    let isGameStarted = false;
+    
+    let leftPos;
+    let rightPos;
+    let dragPos;
+    
+    let isDragging = false;
+    let progress = 0;
+    
+    let emojiSize = 80;
+    
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textAlign(CENTER, CENTER);
+      textSize(emojiSize);
+      
+      leftPos = createVector(150, height / 2);
+      rightPos = createVector(width - 150, height / 2);
+      dragPos = leftPos.copy();
+      
+      // 绑定按钮事件
+      document.getElementById('start-btn').addEventListener('click', startGame);
+    }
+    
+    function startGame() {
+      leftEmoji = document.getElementById('left-emoji-input').value;
+      rightEmoji = document.getElementById('right-emoji-input').value;
+      
+      // 显示加载状态
+      document.getElementById('loading').style.display = 'block';
+      
+      // 模拟AI生成过渡态（实际项目中可以调用真实的AI API）
+      setTimeout(() => {
+        transitionEmojis = generateAITransitionEmojis(leftEmoji, rightEmoji);
+        document.getElementById('emoji-selector').style.display = 'none';
+        isGameStarted = true;
+      }, 1000);
+    }
+    
+    function generateAITransitionEmojis(left, right) {
+      // 简单的AI过渡态生成逻辑
+      // 实际项目中可以调用OpenAI API或其他AI服务
+      const transitions = {
+        '😀🎉': ['😄', '😃', '😆'],
+        '😀😢': ['😐', '😔', '😢'],
+        '😀😡': ['😐', '😒', '😡'],
+        '😀😎': ['😃', '😅', '😎'],
+        '🎉🎂': ['🎊', '🎁', '🎂'],
+        '😢😊': ['😐', '🙂', '😊'],
+        '😡😀': ['😒', '😐', '😀'],
+        '🐶🐱': ['🐾', '🐹', '🐱'],
+        '🍎🍌': ['🍏', '🍐', '🍌'],
+        '🌞🌙': ['🌅', '🌇', '🌙']
+      };
+      
+      const key = left + right;
+      if (transitions[key]) {
+        return transitions[key];
+      }
+      
+      // 默认过渡态
+      return [left, left, right];
+    }
+    
+    function draw() {
+      if (!isGameStarted) {
+        background(240, 245, 250);
+        return;
+      }
+      
+      background(240, 245, 250);
+      
+      drawGuideLine();
+      
+      if (isDragging) {
+        let targetX = constrain(mouseX, leftPos.x, rightPos.x);
+        dragPos.x = targetX;
+        
+        progress = map(dragPos.x, leftPos.x, rightPos.x, 0, 1);
+      }
+      
+      drawRightEmoji();
+      drawLeftEmoji();
+      drawDraggingEmoji();
+      
+      drawInstructions();
+    }
+    
+    function drawGuideLine() {
+      stroke(200, 200, 200);
+      strokeWeight(2);
+      setLineDash([10, 10]);
+      line(leftPos.x, leftPos.y, rightPos.x, rightPos.y);
+      setLineDash([]);
+    }
+    
+    function setLineDash(pattern) {
+      drawingContext.setLineDash(pattern);
+    }
+    
+    function drawLeftEmoji() {
+      if (!isDragging || progress < 0.3) {
+        push();
+        translate(leftPos.x, leftPos.y);
+        
+        let pulse = sin(frameCount * 0.1) * 3;
+        textSize(emojiSize + pulse);
+        
+        noStroke();
+        text(leftEmoji, 0, 0);
+        
+        if (!isDragging) {
+          textSize(16);
+          fill(100);
+          text("按住拖动", 0, emojiSize / 2 + 30);
+        }
+        pop();
+      }
+    }
+    
+    function drawRightEmoji() {
+      push();
+      translate(rightPos.x, rightPos.y);
+      
+      if (progress > 0.7) {
+        let rightAlpha = map(progress, 0.7, 1, 0, 255);
+        textSize(emojiSize);
+        fill(0, rightAlpha);
+        noStroke();
+        text(rightEmoji, 0, 0);
+      }
+      pop();
+    }
+    
+    function drawDraggingEmoji() {
+      if (isDragging) {
+        push();
+        translate(dragPos.x, dragPos.y);
+        
+        let currentSize = map(progress, 0, 1, emojiSize, emojiSize * 1.2);
+        textSize(currentSize);
+        
+        let blendedEmoji = blendEmojis(progress);
+        
+        fill(0);
+        noStroke();
+        text(blendedEmoji, 0, 0);
+        
+        textSize(14);
+        fill(80);
+        let percent = Math.round(progress * 100);
+        text(percent + "%", 0, emojiSize / 2 + 25);
+        
+        pop();
+      }
+    }
+    
+    function blendEmojis(progress) {
+      if (transitionEmojis.length === 0) {
+        return leftEmoji;
+      }
+      
+      if (progress < 0.33) {
+        return transitionEmojis[0] || leftEmoji;
+      } else if (progress < 0.66) {
+        return transitionEmojis[1] || leftEmoji;
+      } else {
+        return transitionEmojis[2] || rightEmoji;
+      }
+    }
+    
+    function drawInstructions() {
+      if (!isDragging && progress === 0) {
+        push();
+        textSize(14);
+        fill(120);
+        noStroke();
+        textAlign(CENTER);
+        text("← 向右拖动emoji使其变形 →", width / 2, height - 50);
+        pop();
+      }
+    }
+    
+    function mousePressed() {
+      if (!isGameStarted) return;
+      
+      let d = dist(mouseX, mouseY, leftPos.x, leftPos.y);
+      if (d < emojiSize) {
+        isDragging = true;
+        dragPos = leftPos.copy();
+        progress = 0;
+      }
+    }
+    
+    function mouseReleased() {
+      if (isDragging) {
+        isDragging = false;
+        
+        if (progress < 0.3) {
+          dragPos = leftPos.copy();
+          progress = 0;
+        }
+      }
+    }
+    
+    function mouseDragged() {
+      if (isDragging) {
+        let targetX = constrain(mouseX, leftPos.x, rightPos.x);
+        dragPos.x = targetX;
+        progress = map(dragPos.x, leftPos.x, rightPos.x, 0, 1);
+      }
+    }
+    
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      rightPos = createVector(width - 150, height / 2);
+      if (!isDragging) {
+        dragPos = leftPos.copy();
+      }
+    }
+  </script>
+</body>
+</html>
