@@ -259,17 +259,7 @@ function drawMorphingShape(progress, size) {
     return;
   }
   
-  // 实现平滑的拓扑变换
-  if (progress < 0.33) {
-    let t = map(progress, 0, 0.33, 0, 1);
-    drawMorphShape(leftShape, transitionShapes[0], t, size);
-  } else if (progress < 0.66) {
-    let t = map(progress, 0.33, 0.66, 0, 1);
-    drawMorphShape(transitionShapes[0], transitionShapes[1], t, size);
-  } else {
-    let t = map(progress, 0.66, 1, 0, 1);
-    drawMorphShape(transitionShapes[1], rightShape, t, size);
-  }
+  drawMorphShape(leftShape, rightShape, progress, size);
 }
 
 function drawMorphShape(shape1, shape2, t, size) {
@@ -685,17 +675,63 @@ function startGame() {
 }
 
 function generateTransitionShapes(left, right) {
-  // 简单的过渡图形生成逻辑
   const transitions = {
     'triangle square': ['triangle', 'diamond', 'square'],
     'triangle circle': ['triangle', 'pentagon', 'circle'],
-    'square circle': ['square', 'hexagon', 'circle'],
-    'circle star': ['circle', 'pentagon', 'star'],
+    'triangle pentagon': ['triangle', 'triangle', 'pentagon'],
+    'triangle hexagon': ['triangle', 'pentagon', 'hexagon'],
     'triangle star': ['triangle', 'pentagon', 'star'],
+    'triangle heart': ['triangle', 'diamond', 'heart'],
+    'triangle diamond': ['triangle', 'triangle', 'diamond'],
+    'square triangle': ['square', 'diamond', 'triangle'],
+    'square circle': ['square', 'hexagon', 'circle'],
+    'square pentagon': ['square', 'hexagon', 'pentagon'],
+    'square hexagon': ['square', 'square', 'hexagon'],
     'square star': ['square', 'hexagon', 'star'],
-    'heart circle': ['heart', 'circle', 'circle'],
+    'square heart': ['square', 'diamond', 'heart'],
+    'square diamond': ['square', 'square', 'diamond'],
+    'circle triangle': ['circle', 'pentagon', 'triangle'],
+    'circle square': ['circle', 'hexagon', 'square'],
+    'circle pentagon': ['circle', 'circle', 'pentagon'],
+    'circle hexagon': ['circle', 'pentagon', 'hexagon'],
+    'circle star': ['circle', 'pentagon', 'star'],
+    'circle heart': ['circle', 'circle', 'heart'],
+    'circle diamond': ['circle', 'hexagon', 'diamond'],
+    'pentagon triangle': ['pentagon', 'pentagon', 'triangle'],
+    'pentagon square': ['pentagon', 'hexagon', 'square'],
+    'pentagon circle': ['pentagon', 'pentagon', 'circle'],
+    'pentagon hexagon': ['pentagon', 'pentagon', 'hexagon'],
+    'pentagon star': ['pentagon', 'pentagon', 'star'],
+    'pentagon heart': ['pentagon', 'pentagon', 'heart'],
+    'pentagon diamond': ['pentagon', 'hexagon', 'diamond'],
+    'hexagon triangle': ['hexagon', 'pentagon', 'triangle'],
+    'hexagon square': ['hexagon', 'hexagon', 'square'],
+    'hexagon circle': ['hexagon', 'hexagon', 'circle'],
+    'hexagon pentagon': ['hexagon', 'hexagon', 'pentagon'],
+    'hexagon star': ['hexagon', 'hexagon', 'star'],
+    'hexagon heart': ['hexagon', 'hexagon', 'heart'],
+    'hexagon diamond': ['hexagon', 'hexagon', 'diamond'],
+    'star triangle': ['star', 'pentagon', 'triangle'],
+    'star square': ['star', 'hexagon', 'square'],
+    'star circle': ['star', 'pentagon', 'circle'],
+    'star pentagon': ['star', 'pentagon', 'pentagon'],
+    'star hexagon': ['star', 'hexagon', 'hexagon'],
+    'star heart': ['star', 'pentagon', 'heart'],
+    'star diamond': ['star', 'hexagon', 'diamond'],
+    'heart triangle': ['heart', 'diamond', 'triangle'],
+    'heart square': ['heart', 'diamond', 'square'],
+    'heart circle': ['heart', 'heart', 'circle'],
+    'heart pentagon': ['heart', 'diamond', 'pentagon'],
+    'heart hexagon': ['heart', 'diamond', 'hexagon'],
+    'heart star': ['heart', 'diamond', 'star'],
+    'heart diamond': ['heart', 'diamond', 'diamond'],
+    'diamond triangle': ['diamond', 'triangle', 'triangle'],
     'diamond square': ['diamond', 'square', 'square'],
-    'pentagon hexagon': ['pentagon', 'pentagon', 'hexagon']
+    'diamond circle': ['diamond', 'hexagon', 'circle'],
+    'diamond pentagon': ['diamond', 'hexagon', 'pentagon'],
+    'diamond hexagon': ['diamond', 'hexagon', 'hexagon'],
+    'diamond star': ['diamond', 'hexagon', 'star'],
+    'diamond heart': ['diamond', 'diamond', 'heart']
   };
   
   const key = left + ' ' + right;
@@ -703,6 +739,5 @@ function generateTransitionShapes(left, right) {
     return transitions[key];
   }
   
-  // 默认过渡
-  return [left, left, right];
+  return [left, right, right];
 }
